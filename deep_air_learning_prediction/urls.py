@@ -1,0 +1,33 @@
+"""deep_air_learning_prediction URL Configuration
+
+The `urlpatterns` list routes URLs to views. For more information please see:
+    https://docs.djangoproject.com/en/2.0/topics/http/urls/
+Examples:
+Function views
+    1. Add an import:  from my_app import views
+    2. Add a URL to urlpatterns:  path('', views.home, name='home')
+Class-based views
+    1. Add an import:  from other_app.views import Home
+    2. Add a URL to urlpatterns:  path('', Home.as_view(), name='home')
+Including another URLconf
+    1. Import the include() function: from django.urls import include, path
+    2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
+"""
+from django.contrib import admin
+from django.urls import path
+from user import views as userviews
+from projectadmin import views as projectadminviews
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+
+    path('', userviews.user_login, name='home'),
+    path('user_login/', userviews.user_login, name='user_login'),
+    path('user_index/', userviews.user_index, name='user_index'),
+    path('user_register/', userviews.user_register, name='user_register'),
+    path('user_home/', userviews.user_home, name='user_home'),
+
+    path('admin_login/', projectadminviews.admin_login, name="admin_login"),
+    path('admin_home/', projectadminviews.admin_home, name='admin_home'),
+    path('air_quality_analysis/', userviews.air_quality_analysis, name='air_quality_analysis'),
+]

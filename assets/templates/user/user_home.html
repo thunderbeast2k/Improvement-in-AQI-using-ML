@@ -1,0 +1,150 @@
+<!--A Design by W3layouts
+Author: W3layout
+Author URL: http://w3layouts.com
+License: Creative Commons Attribution 3.0 Unported
+License URL: http://creativecommons.org/licenses/by/3.0/
+-->
+<!DOCTYPE html>
+<html>
+<head>
+<title>Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality</title>
+     {% load static %}
+<link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type="text/css" media="all" />
+<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+<script src="{% static 'js/jquery.min.js' %}"></script>
+<!-- Custom Theme files -->
+<!--theme-style-->
+<link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css" media="all" />
+<!--//theme-style-->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="keywords" content="Charity Hub Responsive web template, Bootstrap Web Templates, Flat Web Templates, Andriod Compatible web template,
+Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyErricsson, Motorola web design" />
+<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+ <style>
+#customers {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+  background-color:white;
+}
+
+#customers td, #customers th {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+#customers tr:nth-child(even){background-color: #f2f2f2;}
+
+#customers tr:hover {background-color: #ddd;}
+
+#customers th {
+  padding-top: 12px;
+  padding-bottom: 12px;
+  text-align: left;
+  background-color: #4CAF50;
+  color: white;
+}
+</style>
+</head>
+<body>
+<!--header-->
+	<div class="header">
+	<div class="header-top">
+        <h2 style="text-align:center;color:white;font-size:40px;"> Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality</h2>
+
+		<div class="container">
+
+				<div class="top-nav">
+					<span class="menu"><img src="images/menu.png" alt=""> </span>
+
+						<ul>
+						<li class="active"><a href="{% url 'user_home' %}"  >View Dataset</a><span>/</span></li>
+						<li><a href="{% url 'air_quality_analysis' %}" >Air Quality Analysis</a><span>/</span></li>
+                            <li><a href="{% url 'pollution_analysis' %}" >Pollution Analysis</a><span>/</span></li>
+						<li><a href="{% url 'user_login' %}"  >Logout</a><span>/</span></li>
+
+					</ul>
+
+					<!--script-->
+				<script>
+					$("span.menu").click(function(){
+						$(".top-nav ul").slideToggle(500, function(){
+						});
+					});
+			</script>
+				</div>
+
+			</div>
+		</div>
+
+		</div>
+<!---->
+ <div class="contact">
+	<div class="container">
+
+			<h2>View Dataset</h2>
+<table id="customers" style="overflow:scroll;">
+        <thead>
+        <tr class="warning">
+
+            <th>Stn_code</th>
+             <th>Sampling Date</th>
+            <th>State</th>
+            <th>Location</th>
+            <th>Agency</th>
+            <th>Type</th>
+            <th>SO2</th>
+            <th>NO2</th>
+            <th>RSPM</th>
+            <th>SPM</th>
+            <th>Location Monitoring Station</th>
+            <th>PM25</th>
+            <th>Date</th>
+
+
+
+
+
+        </tr>
+        </thead>
+        {% for obj in view_data1 %}
+
+       <tbody>
+        <tr>
+            <td>{{obj.stn_code}}</td>
+            <td>{{obj.sampling_date}}</td>
+            <td>{{obj.state}}</td>
+            <td>{{obj.location}}</td>
+            <td>{{obj.agency}}</td>
+            <td>{{obj.type}}</td>
+            <td>{{obj.so2}}</td>
+            <td>{{obj.no2}}</td>
+            <td>{{obj.rspm}}</td>
+            <td>{{obj.spm}}</td>
+            <td>{{obj.location_monitoring_station}}</td>
+             <td>{{obj.pm2_5}}</td>
+             <td>{{obj.date}}</td>
+
+
+
+
+                 </tr>
+       </tbody>
+        {% endfor %}
+    </table>
+				</div>
+
+			</div>
+
+
+	<div class="footer">
+
+		<div class="container">
+				<div class="class-footer">
+					 <p class="footer-grid"> Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality </p>
+			 	</div>
+		 </div>
+	</div>
+ </body>
+</html>
