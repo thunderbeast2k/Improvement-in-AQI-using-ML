@@ -1,92 +1,316 @@
-<!--A Design by W3layouts
-Author: W3layout
-Author URL: http://w3layouts.com
-License: Creative Commons Attribution 3.0 Unported
-License URL: http://creativecommons.org/licenses/by/3.0/
--->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality</title>
-     {% load static %}
+<title>Pollution Analysis — Image-Based Detection</title>
+{% load static %}
 <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type="text/css" media="all" />
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="{% static 'js/jquery.min.js' %}"></script>
-<!-- Custom Theme files -->
-<!--theme-style-->
 <link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css" media="all" />
-<!--//theme-style-->
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Charity Hub Responsive web template, Bootstrap Web Templates, Flat Web Templates, Andriod Compatible web template,
-Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyErricsson, Motorola web design" />
-<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+<style>
+  body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+  .page-header {
+    background: linear-gradient(135deg, #8e44ad, #6c3483);
+    color: white; padding: 30px 0; margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .page-header h1 { font-size: 26px; font-weight: 700; margin: 0; }
+  .page-header p  { margin: 5px 0 0; opacity: 0.85; }
+  .nav-links a {
+    color: rgba(255,255,255,0.85); text-decoration: none;
+    margin-left: 20px; font-size: 14px; font-weight: 500;
+    border-bottom: 2px solid transparent; padding-bottom: 4px; transition: all 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: #fff; border-color: #fff; }
+
+  .section-card {
+    background: white; border-radius: 12px; padding: 25px;
+    margin-bottom: 30px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .section-card h4 { color: #8e44ad; font-weight: 700; margin-bottom: 20px;
+    border-bottom: 2px solid #f5eef8; padding-bottom: 10px; }
+
+  /* Upload Zone */
+  .upload-zone {
+    border: 3px dashed #c39bd3; border-radius: 12px;
+    padding: 50px 30px; text-align: center; cursor: pointer;
+    transition: all 0.3s; background: #faf5ff;
+  }
+  .upload-zone:hover { border-color: #8e44ad; background: #f5eef8; }
+  .upload-zone .icon { font-size: 60px; margin-bottom: 15px; }
+  .upload-zone p { color: #777; margin: 0; font-size: 14px; }
+  .upload-zone input[type=file] { display: none; }
+
+  .btn-analyze {
+    background: linear-gradient(135deg, #8e44ad, #6c3483);
+    color: white; border: none; border-radius: 8px;
+    padding: 14px 40px; font-size: 16px; font-weight: 600;
+    cursor: pointer; width: 100%; margin-top: 20px;
+    transition: opacity 0.2s;
+  }
+  .btn-analyze:hover { opacity: 0.9; }
+  .btn-analyze:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  /* Result Cards */
+  .result-img { border-radius: 12px; max-width: 100%; max-height: 350px; object-fit: contain; }
+
+  .score-gauge {
+    border-radius: 12px; padding: 30px; color: white; text-align: center;
+    margin-bottom: 20px;
+  }
+  .score-gauge .score-num { font-size: 72px; font-weight: 900; line-height: 1; }
+  .score-gauge .score-label { font-size: 22px; font-weight: 700; margin-top: 8px; }
+  .score-gauge .score-sub { font-size: 13px; opacity: 0.8; margin-top: 6px; }
+
+  .metric-grid { display: flex; flex-wrap: wrap; gap: 12px; margin: 15px 0; }
+  .metric-box {
+    flex: 1; min-width: 140px; background: #f8f9fa;
+    border-radius: 10px; padding: 14px 16px; text-align: center;
+    border: 2px solid #e0e0e0;
+  }
+  .metric-box .m-label { font-size: 12px; color: #888; margin-bottom: 4px; }
+  .metric-box .m-val   { font-size: 22px; font-weight: 700; color: #333; }
+
+  .rec-list { list-style: none; padding: 0; }
+  .rec-list li {
+    background: #f8f9ff; border-left: 4px solid #8e44ad;
+    padding: 10px 15px; margin-bottom: 8px; border-radius: 6px;
+    font-size: 14px;
+  }
+
+  .error-box {
+    background: #fdecea; border-left: 4px solid #e74c3c;
+    padding: 16px; border-radius: 8px; color: #922b21; margin-bottom: 20px;
+  }
+
+  .preview-name {
+    margin-top: 10px; font-size: 13px; color: #555; text-align: center;
+  }
+  
+  .how-it-works { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
+  .step-box {
+    flex: 1; min-width: 160px; background: #f5eef8; border-radius: 10px;
+    padding: 15px; text-align: center;
+  }
+  .step-box .step-icon { font-size: 30px; margin-bottom: 8px; }
+  .step-box p { font-size: 12px; color: #555; margin: 0; }
+  .step-box strong { display: block; color: #8e44ad; margin-bottom: 4px; }
+</style>
 </head>
 <body>
-<!--header-->
-	<div class="header">
-	<div class="header-top">
-        <h2 style="text-align:center;color:white;font-size:40px;"> Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality</h2>
 
-		<div class="container">
+<!-- HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;">
+      <div>
+        <h1>📷 Image-Based Pollution Analysis</h1>
+        <p>Upload a sky/outdoor photo to detect air pollution using OpenCV + Computer Vision</p>
+      </div>
+      <div class="nav-links">
+        <a href="{% url 'home' %}">📊 View Dataset</a>
+        <a href="{% url 'air_quality_analysis' %}">🔬 Air Quality Analysis</a>
+        <a href="{% url 'pollution_analysis' %}" class="active">📷 Pollution Analysis</a>
+        <a href="{% url 'logout' %}">🚪 Logout</a>
+      </div>
+    </div>
+  </div>
+</div>
 
-				<div class="top-nav">
-					<span class="menu"><img src="images/menu.png" alt=""> </span>
+<div class="container">
 
-						<ul>
-						<li class="active"><a href="{% url 'user_home' %}"  >View Dataset</a><span>/</span></li>
-						<li><a href="{% url 'air_quality_analysis' %}" >Air Quality Analysis</a><span>/</span></li>
-                            <li><a href="{% url 'pollution_analysis' %}" >Pollution Analysis</a><span>/</span></li>
-						<li><a href="{% url 'user_login' %}"  >Logout</a><span>/</span></li>
+  <!-- HOW IT WORKS -->
+  <div class="section-card">
+    <h4>⚙️ How It Works</h4>
+    <div class="how-it-works">
+      <div class="step-box">
+        <div class="step-icon">📤</div>
+        <strong>1. Upload Image</strong>
+        <p>Upload a photo of sky, road, or outdoor scene</p>
+      </div>
+      <div class="step-box">
+        <div class="step-icon">🔬</div>
+        <strong>2. OpenCV Analysis</strong>
+        <p>Extracts brightness, haze, saturation, contrast</p>
+      </div>
+      <div class="step-box">
+        <div class="step-icon">🧮</div>
+        <strong>3. Pollution Score</strong>
+        <p>Weighted formula maps features to a 0–500 score</p>
+      </div>
+      <div class="step-box">
+        <div class="step-icon">🏷️</div>
+        <strong>4. Classification</strong>
+        <p>Good → Moderate → Poor → Hazardous</p>
+      </div>
+      <div class="step-box">
+        <div class="step-icon">💡</div>
+        <strong>5. Recommendations</strong>
+        <p>Health & safety advice based on detected level</p>
+      </div>
+    </div>
+  </div>
 
-					</ul>
+  <!-- UPLOAD FORM -->
+  <div class="section-card">
+    <h4>📁 Upload Image for Analysis</h4>
 
-					<!--script-->
-				<script>
-					$("span.menu").click(function(){
-						$(".top-nav ul").slideToggle(500, function(){
-						});
-					});
-			</script>
-				</div>
+    {% if messages %}
+    <ul class="messages" style="list-style:none;padding:0;">
+      {% for message in messages %}
+      <li class="{{ message.tags }}" style="background:#e8f5e9;padding:10px;border-radius:6px;margin-bottom:8px;">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
 
-			</div>
-		</div>
+    <form method="POST" enctype="multipart/form-data" id="uploadForm">
+      {% csrf_token %}
+      <div class="upload-zone" id="uploadZone" onclick="document.getElementById('imgInput').click()">
+        <div class="icon">🖼️</div>
+        <p id="uploadText"><strong>Click to select an image</strong> or drag & drop here</p>
+        <p style="margin-top:6px;">Supports JPG, PNG, JPEG · Recommended: outdoor/sky photos</p>
+        <input type="file" id="imgInput" name="image_file" accept="image/*" required onchange="previewFile(this)">
+      </div>
+      <div id="previewContainer" style="display:none;text-align:center;margin-top:15px;">
+        <img id="previewImg" src="" style="max-height:200px;border-radius:10px;max-width:100%;">
+        <div class="preview-name" id="previewName"></div>
+      </div>
+      <button type="submit" class="btn-analyze" id="analyzeBtn">🔍 Analyze Pollution Level</button>
+    </form>
+  </div>
 
-		</div>
-<!---->
- <div class="contact">
-	<div class="container" >
+  <!-- RESULTS -->
+  {% if analysis_result %}
+    {% if analysis_result.error %}
+    <div class="error-box">⚠️ {{ analysis_result.error }}</div>
+    {% else %}
 
-			<h2>Image Analysis</h2>
-			  <form  method="post" enctype="multipart/form-data">
-                 {% csrf_token %}
-					<div class="contact-grid" style="margin-left:450px;">
-						<div class="col-md-6 contact-us">
-							<input type="file"  name="testcur" accept="image/*" onchange="loadFile(event)" required>
-						</div>
+    <div class="row">
+      <!-- Left: Image + Score -->
+      <div class="col-md-5">
+        <div class="section-card" style="text-align:center;">
+          <h4>📸 Analyzed Image</h4>
+          <img class="result-img"
+               src="data:image/jpeg;base64,{{ analysis_result.image_b64 }}"
+               alt="Analyzed image">
+          <p style="font-size:12px;color:#888;margin-top:8px;">{{ analysis_result.image_size }}</p>
+        </div>
 
+        <div class="score-gauge"
+             style="background: linear-gradient(135deg, {{ analysis_result.level_color }}, {{ analysis_result.level_color }}bb);">
+          <div class="score-num">{{ analysis_result.pollution_score }}</div>
+          <div class="score-label">{{ analysis_result.pollution_level }}</div>
+          <div class="score-sub">Pollution Score (0 = Clean · 500 = Hazardous)</div>
+        </div>
+      </div>
 
-						<div class="clearfix"> </div>
-					</div><br>
+      <!-- Right: Metrics + Recommendations -->
+      <div class="col-md-7">
+        <div class="section-card">
+          <h4>📊 Extracted Visual Features</h4>
+          <p style="font-size:13px;color:#777;margin-bottom:15px;">{{ analysis_result.description }}</p>
+          <div class="metric-grid">
+            <div class="metric-box">
+              <div class="m-label">☀️ Brightness</div>
+              <div class="m-val">{{ analysis_result.brightness }}</div>
+            </div>
+            <div class="metric-box">
+              <div class="m-label">🔵 Blue Intensity</div>
+              <div class="m-val">{{ analysis_result.blue_intensity }}</div>
+            </div>
+            <div class="metric-box">
+              <div class="m-label">🔲 Contrast</div>
+              <div class="m-val">{{ analysis_result.contrast }}</div>
+            </div>
+            <div class="metric-box">
+              <div class="m-label">🎨 Saturation</div>
+              <div class="m-val">{{ analysis_result.saturation }}</div>
+            </div>
+            <div class="metric-box">
+              <div class="m-label">🌫️ Haze Factor %</div>
+              <div class="m-val">{{ analysis_result.haze_factor }}</div>
+            </div>
+            <div class="metric-box">
+              <div class="m-label">⬜ Gray Dominance %</div>
+              <div class="m-val">{{ analysis_result.gray_dominance }}</div>
+            </div>
+          </div>
+        </div>
 
+        <div class="section-card">
+          <h4>💡 Health Recommendations</h4>
+          <ul class="rec-list">
+            {% for rec in analysis_result.recommendations %}
+            <li>✅ {{ rec }}</li>
+            {% endfor %}
+          </ul>
+        </div>
 
-					<div class="send ">
-						<input type="submit" value="SUBMIT" style="margin-left:450px;">
-                        		</div>
-				</form>
-				</div>
+        <!-- Pollution Level Scale -->
+        <div class="section-card">
+          <h4>📏 Pollution Level Scale</h4>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <div style="flex:1;min-width:100px;background:#27ae60;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:600;">
+              🟢 Good<br><small>Score &lt; 80</small>
+            </div>
+            <div style="flex:1;min-width:100px;background:#f39c12;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:600;">
+              🟡 Moderate<br><small>80 – 180</small>
+            </div>
+            <div style="flex:1;min-width:100px;background:#e74c3c;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:600;">
+              🔴 Poor<br><small>180 – 300</small>
+            </div>
+            <div style="flex:1;min-width:100px;background:#8e44ad;color:white;padding:10px;border-radius:8px;text-align:center;font-size:13px;font-weight:600;">
+              🟣 Hazardous<br><small>Score &gt; 300</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
 
-			</div>
+    {% endif %}
+  {% endif %}
 
+</div><!-- /container -->
 
-	<div class="footer">
+<div style="background:#8e44ad;color:white;text-align:center;padding:15px;margin-top:20px;font-size:13px;">
+  Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality
+</div>
 
-		<div class="container">
-				<div class="class-footer">
-					 <p class="footer-grid"> Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality </p>
-			 	</div>
-		 </div>
-	</div>
- </body>
+<script>
+function previewFile(input) {
+  const file = input.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = e => {
+      document.getElementById('previewImg').src = e.target.result;
+      document.getElementById('previewContainer').style.display = 'block';
+      document.getElementById('previewName').textContent = file.name + ' (' + (file.size/1024).toFixed(1) + ' KB)';
+      document.getElementById('uploadText').innerHTML = '<strong>✅ Image selected — click Analyze</strong>';
+    };
+    reader.readAsDataURL(file);
+  }
+}
+
+// Drag & Drop support
+const zone = document.getElementById('uploadZone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#8e44ad'; });
+zone.addEventListener('dragleave', () => { zone.style.borderColor = '#c39bd3'; });
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.style.borderColor = '#c39bd3';
+  const dt = e.dataTransfer;
+  if (dt.files.length) {
+    document.getElementById('imgInput').files = dt.files;
+    previewFile(document.getElementById('imgInput'));
+  }
+});
+
+// Disable button on submit to prevent double-submit
+document.getElementById('uploadForm').addEventListener('submit', function() {
+  const btn = document.getElementById('analyzeBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Analyzing... Please wait';
+});
+</script>
+</body>
 </html>

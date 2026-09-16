@@ -1,106 +1,410 @@
-<!--A Design by W3layouts
-Author: W3layout
-Author URL: http://w3layouts.com
-License: Creative Commons Attribution 3.0 Unported
-License URL: http://creativecommons.org/licenses/by/3.0/
--->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality</title>
-     {% load static %}
-<link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type="text/css" media="all" />
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-<script src="{% static 'js/jquery.min.js' %}"></script>
-<!-- Custom Theme files -->
-<!--theme-style-->
-<link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css" media="all" />
-<!--//theme-style-->
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Charity Hub Responsive web template, Bootstrap Web Templates, Flat Web Templates, Andriod Compatible web template,
-Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyErricsson, Motorola web design" />
-<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Create Account — Deep Air Learning</title>
+  <meta name="description" content="Register a new account to access the Deep Air Learning AQI prediction platform." />
+  {% load static %}
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg-deep: #050d1a;
+      --bg-mid:  #0a1628;
+      --accent:  #3b82f6;
+      --accent2: #6366f1;
+      --glass:   rgba(255,255,255,0.05);
+      --glass-border: rgba(255,255,255,0.10);
+      --text:    #f1f5f9;
+      --muted:   #94a3b8;
+      --danger:  #ef4444;
+      --success: #22c55e;
+    }
+
+    html, body {
+      min-height: 100%;
+      font-family: 'Inter', sans-serif;
+      background: var(--bg-deep);
+      color: var(--text);
+    }
+
+    /* ── Animated gradient background ── */
+    .bg-scene {
+      position: fixed; inset: 0; z-index: 0;
+      background: radial-gradient(ellipse 80% 60% at 20% 30%, rgba(99,102,241,0.18) 0%, transparent 55%),
+                  radial-gradient(ellipse 60% 50% at 80% 70%, rgba(59,130,246,0.15) 0%, transparent 55%),
+                  linear-gradient(135deg, #050d1a 0%, #0a1628 50%, #080e1f 100%);
+    }
+
+    .orb {
+      position: fixed; border-radius: 50%; filter: blur(80px);
+      animation: drift 12s ease-in-out infinite alternate;
+      pointer-events: none; z-index: 0;
+    }
+    .orb-1 { width: 420px; height: 420px; background: rgba(99,102,241,0.12); top: -100px; left: -80px; animation-duration: 14s; }
+    .orb-2 { width: 320px; height: 320px; background: rgba(59,130,246,0.1);  bottom: -80px; right: -60px; animation-duration: 10s; animation-delay: -5s; }
+    .orb-3 { width: 200px; height: 200px; background: rgba(16,185,129,0.08); top: 40%; left: 55%; animation-duration: 16s; animation-delay: -3s; }
+    @keyframes drift {
+      from { transform: translate(0, 0) scale(1); }
+      to   { transform: translate(30px, 20px) scale(1.08); }
+    }
+
+    #particles { position: fixed; inset: 0; z-index: 0; pointer-events: none; }
+
+    .page-wrapper {
+      position: relative; z-index: 1;
+      min-height: 100vh; display: flex; flex-direction: column;
+    }
+
+    /* ── Navbar ── */
+    .navbar {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 18px 40px;
+      background: rgba(5,13,26,0.6);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--glass-border);
+    }
+    .navbar-brand {
+      display: flex; align-items: center; gap: 10px;
+      text-decoration: none; color: var(--text);
+    }
+    .navbar-brand .logo-icon {
+      width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent2), var(--accent));
+      border-radius: 10px; display: grid; place-items: center; font-size: 18px;
+    }
+    .navbar-brand span { font-size: 15px; font-weight: 700; letter-spacing: -0.3px; }
+    .navbar-links { display: flex; gap: 6px; }
+    .navbar-links a {
+      color: var(--muted); text-decoration: none; font-size: 13px; font-weight: 500;
+      padding: 7px 14px; border-radius: 8px; transition: all 0.2s;
+    }
+    .navbar-links a:hover, .navbar-links a.active {
+      color: var(--text); background: var(--glass);
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1; display: flex; align-items: center; justify-content: center;
+      padding: 40px 20px;
+    }
+
+    /* ── Card ── */
+    .card {
+      width: 100%; max-width: 480px;
+      background: rgba(10,22,40,0.75);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 44px 40px 40px;
+      backdrop-filter: blur(20px);
+      box-shadow: 0 0 0 1px rgba(255,255,255,0.03),
+                  0 30px 80px rgba(0,0,0,0.5),
+                  0 0 60px rgba(99,102,241,0.06);
+      animation: fadeUp 0.5s ease both;
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(28px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #10b981, #3b82f6);
+      border-radius: 16px; display: grid; place-items: center;
+      font-size: 24px; margin-bottom: 20px;
+      box-shadow: 0 8px 24px rgba(16,185,129,0.3);
+    }
+    .card h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; margin-bottom: 6px; }
+    .card .subtitle { color: var(--muted); font-size: 14px; margin-bottom: 32px; }
+
+    /* ── Messages ── */
+    .messages { list-style: none; margin-bottom: 20px; }
+    .messages li {
+      padding: 12px 16px; border-radius: 10px; font-size: 13px; font-weight: 500;
+      background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.3); color: #fca5a5;
+      margin-bottom: 8px;
+    }
+    .messages li.success {
+      background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); color: #86efac;
+    }
+
+    /* ── Grid for two-column fields ── */
+    .fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 14px; }
+    .field-full { grid-column: 1 / -1; }
+
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block; font-size: 12px; font-weight: 600; color: var(--muted);
+      letter-spacing: 0.5px; text-transform: uppercase; margin-bottom: 8px;
+    }
+    .field-inner { position: relative; }
+    .field-inner .icon {
+      position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+      font-size: 15px; pointer-events: none; opacity: 0.45;
+    }
+    .field input {
+      width: 100%; padding: 13px 16px 13px 44px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 12px; color: var(--text); font-size: 14px; font-family: 'Inter', sans-serif;
+      outline: none; transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+    .field input::placeholder { color: rgba(148,163,184,0.45); }
+    .field input:focus {
+      border-color: #10b981;
+      background: rgba(16,185,129,0.05);
+      box-shadow: 0 0 0 3px rgba(16,185,129,0.12);
+    }
+
+    .eye-toggle {
+      position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+      cursor: pointer; font-size: 15px; opacity: 0.45; transition: opacity 0.2s;
+      background: none; border: none; color: var(--text); padding: 0;
+    }
+    .eye-toggle:hover { opacity: 0.9; }
+
+    /* ── Strength bar ── */
+    .strength-bar { display: flex; gap: 4px; margin-top: 8px; }
+    .strength-bar span {
+      flex: 1; height: 3px; border-radius: 99px;
+      background: rgba(255,255,255,0.1); transition: background 0.3s;
+    }
+    .strength-label { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+    /* ── Benefits strip ── */
+    .benefits {
+      display: flex; gap: 8px; margin-bottom: 28px; flex-wrap: wrap;
+    }
+    .benefit-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.15);
+      border-radius: 8px; padding: 6px 12px; font-size: 12px; color: #6ee7b7;
+    }
+
+    /* ── Submit ── */
+    .btn-primary {
+      width: 100%; padding: 14px;
+      background: linear-gradient(135deg, #10b981, #3b82f6);
+      border: none; border-radius: 12px; color: #fff;
+      font-size: 15px; font-weight: 700; font-family: 'Inter', sans-serif;
+      cursor: pointer; letter-spacing: 0.3px; margin-top: 8px;
+      transition: transform 0.18s, box-shadow 0.18s, filter 0.18s;
+      box-shadow: 0 6px 24px rgba(16,185,129,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-2px); filter: brightness(1.1); box-shadow: 0 10px 32px rgba(16,185,129,0.4); }
+    .btn-primary:active { transform: translateY(0); }
+
+    /* ── Divider ── */
+    .divider { display: flex; align-items: center; gap: 12px; margin: 22px 0 18px; }
+    .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--glass-border); }
+    .divider span { color: var(--muted); font-size: 12px; white-space: nowrap; }
+
+    .login-link {
+      text-align: center;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px; padding: 14px;
+      font-size: 14px; color: var(--muted);
+    }
+    .login-link a {
+      color: var(--accent); text-decoration: none; font-weight: 600; transition: color 0.2s;
+    }
+    .login-link a:hover { color: #818cf8; }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center; padding: 16px;
+      font-size: 12px; color: rgba(148,163,184,0.4);
+      border-top: 1px solid var(--glass-border);
+    }
+
+    /* ── Loading spinner ── */
+    #regBtn.loading { pointer-events: none; }
+    #regBtn.loading::after {
+      content: '';
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      vertical-align: middle; margin-left: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    @media (max-width: 520px) {
+      .fields-grid { grid-template-columns: 1fr; }
+      .card { padding: 32px 22px; }
+      .navbar { padding: 14px 20px; }
+    }
+  </style>
 </head>
 <body>
-<!--header-->
-	<div class="header">
-	<div class="header-top">
-        <h2 style="text-align:center;color:white;font-size:40px;"> Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality</h2>
 
-		<div class="container">
+<div class="bg-scene"></div>
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<canvas id="particles"></canvas>
 
-				<div class="top-nav">
-					<span class="menu"><img src="images/menu.png" alt=""> </span>
+<div class="page-wrapper">
 
-						<ul>
-						<li class="active"><a href="{% url 'user_index' %}"  >Home</a><span>/</span></li>
-						<li><a href="{% url 'user_login' %}" >User</a><span>/</span></li>
-						<li><a href="{% url 'admin_login' %}"  >Admin</a><span>/</span></li>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="{% url 'home' %}" class="navbar-brand">
+      <div class="logo-icon">🌫️</div>
+      <span>Deep Air Learning</span>
+    </a>
+    <div class="navbar-links">
+      <a href="{% url 'home' %}">Home</a>
+      <a href="{% url 'login' %}">Sign In</a>
+      <a href="{% url 'user_register' %}" class="active">Register</a>
+    </div>
+  </nav>
 
-					</ul>
+  <!-- MAIN -->
+  <div class="main">
+    <div class="card">
+      <div class="card-icon">✨</div>
+      <h1>Create your account</h1>
+      <p class="subtitle">Join the Air Quality Intelligence platform</p>
 
-					<!--script-->
-				<script>
-					$("span.menu").click(function(){
-						$(".top-nav ul").slideToggle(500, function(){
-						});
-					});
-			</script>
-				</div>
+      <div class="benefits">
+        <div class="benefit-pill">📊 Live AQI Data</div>
+        <div class="benefit-pill">🤖 ML Predictions</div>
+        <div class="benefit-pill">📷 Image Analysis</div>
+      </div>
 
-			</div>
-		</div>
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
 
-		</div>
-<!---->
- <div class="contact">
-	<div class="container">
+      <form method="post" id="regForm">
+        {% csrf_token %}
+        <div class="fields-grid">
 
-			<h2>User Login</h2>
-			  <form  method="post" id="sendemail">
-                 {% csrf_token %}
-					<div class="contact-grid">
-						<div class="col-md-6 contact-us">
-							<input type="text" placeholder="Full Name" name="full_name" required>
-						</div>
-						<div class="col-md-6 contact-us">
-							<input type="email" placeholder="Email" name="email" required>
-						</div>
-						<div class="clearfix"> </div>
-					</div>
-					<div class="contact-grid">
-						<div class="col-md-6 contact-us">
-							<input type="text" placeholder="Mobile" name="mobile" required>
-						</div>
-						<div class="col-md-6 contact-us">
-							<input type="text" placeholder="Username" name="uname" required>
-						</div>
-						<div class="clearfix"> </div>
-					</div>
-					<div class="contact-grid">
-						<div class="col-md-6 contact-us">
-							<input type="password" placeholder="Password" name="password" required>
-						</div>
+          <div class="field">
+            <label for="full_name">Full Name</label>
+            <div class="field-inner">
+              <span class="icon">🙍</span>
+              <input type="text" id="full_name" name="full_name" placeholder="John Doe" required autocomplete="name" />
+            </div>
+          </div>
 
-						<div class="clearfix"> </div>
-					</div>
-					<div class="send ">
-						<input type="submit" value="REGISTER" >
-                        	</div>
-				</form>
-				</div>
+          <div class="field">
+            <label for="email">Email</label>
+            <div class="field-inner">
+              <span class="icon">📧</span>
+              <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email" />
+            </div>
+          </div>
 
-			</div>
+          <div class="field">
+            <label for="mobile">Mobile</label>
+            <div class="field-inner">
+              <span class="icon">📱</span>
+              <input type="tel" id="mobile" name="mobile" placeholder="+91 9876543210" required />
+            </div>
+          </div>
 
+          <div class="field">
+            <label for="uname">Username</label>
+            <div class="field-inner">
+              <span class="icon">👤</span>
+              <input type="text" id="uname" name="uname" placeholder="username123" required autocomplete="username" />
+            </div>
+          </div>
 
-	<div class="footer">
+          <div class="field field-full">
+            <label for="password">Password</label>
+            <div class="field-inner">
+              <span class="icon">🔑</span>
+              <input type="password" id="password" name="password" placeholder="Create a strong password" required autocomplete="new-password" />
+              <button type="button" class="eye-toggle" id="eyeBtn" aria-label="Toggle password">👁️</button>
+            </div>
+            <div class="strength-bar" id="strengthBar">
+              <span id="s1"></span><span id="s2"></span><span id="s3"></span><span id="s4"></span>
+            </div>
+            <div class="strength-label" id="strengthLabel">Enter a password</div>
+          </div>
 
-		<div class="container">
-				<div class="class-footer">
-					 <p class="footer-grid"> Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality </p>
-			 	</div>
-		 </div>
-	</div>
- </body>
+        </div>
+
+        <button type="submit" class="btn-primary" id="regBtn">Create Account</button>
+      </form>
+
+      <div class="divider"><span>Already have an account?</span></div>
+
+      <div class="login-link">
+        Already registered? <a href="{% url 'login' %}">Sign in →</a>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality
+  </footer>
+
+</div>
+
+<script>
+  /* ── Particles ── */
+  (function() {
+    const canvas = document.getElementById('particles');
+    const ctx = canvas.getContext('2d');
+    let W, H, pts = [];
+    function resize() { W = canvas.width = innerWidth; H = canvas.height = innerHeight; }
+    resize(); window.addEventListener('resize', resize);
+    for (let i = 0; i < 70; i++) {
+      pts.push({ x: Math.random()*window.innerWidth, y: Math.random()*window.innerHeight,
+        r: Math.random()*1.5+0.3, vx: (Math.random()-.5)*.25, vy: (Math.random()-.5)*.25, a: Math.random()*.5+.1 });
+    }
+    (function loop() {
+      ctx.clearRect(0,0,W,H);
+      pts.forEach(p => {
+        p.x = (p.x+p.vx+W)%W; p.y = (p.y+p.vy+H)%H;
+        ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fillStyle = `rgba(148,163,184,${p.a})`; ctx.fill();
+      });
+      requestAnimationFrame(loop);
+    })();
+  })();
+
+  /* ── Eye toggle ── */
+  document.getElementById('eyeBtn').addEventListener('click', function() {
+    const inp = document.getElementById('password');
+    if (inp.type === 'password') { inp.type = 'text'; this.textContent = '🙈'; }
+    else { inp.type = 'password'; this.textContent = '👁️'; }
+  });
+
+  /* ── Password strength ── */
+  const segs = ['#ef4444','#f59e0b','#3b82f6','#10b981'];
+  const labels = ['Too weak','Fair','Good','Strong 💪'];
+  document.getElementById('password').addEventListener('input', function() {
+    const v = this.value;
+    let score = 0;
+    if (v.length >= 8)  score++;
+    if (/[A-Z]/.test(v)) score++;
+    if (/[0-9]/.test(v)) score++;
+    if (/[^A-Za-z0-9]/.test(v)) score++;
+    ['s1','s2','s3','s4'].forEach((id, i) => {
+      document.getElementById(id).style.background = i < score ? segs[score-1] : 'rgba(255,255,255,0.1)';
+    });
+    document.getElementById('strengthLabel').textContent = v.length ? labels[score-1] || 'Too weak' : 'Enter a password';
+    document.getElementById('strengthLabel').style.color = score ? segs[score-1] : 'var(--muted)';
+  });
+
+  /* ── Loading ── */
+  document.getElementById('regForm').addEventListener('submit', function() {
+    const btn = document.getElementById('regBtn');
+    btn.classList.add('loading');
+    btn.textContent = 'Creating account…';
+  });
+</script>
+</body>
 </html>

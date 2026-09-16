@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+<title>Air Quality Prediction</title>
+
+<style>
+
+body{
+font-family:Arial;
+text-align:center;
+margin-top:50px;
+}
+
+input{
+padding:10px;
+width:200px;
+}
+
+button{
+padding:10px 20px;
+}
+
+.result{
+margin-top:30px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<h1>Real Time Air Quality Prediction</h1>
+
+<form method="POST">
+
+{% csrf_token %}
+
+<input type="text" name="city" placeholder="Enter City Name">
+
+<button type="submit">Check AQI</button>
+
+</form>
+
+
+{% if result %}
+
+<div class="result">
+
+<h2>City : {{result.city}}</h2>
+
+<h2>Current AQI : {{result.aqi}}</h2>
+
+<h3>PM2.5 : {{result.pm25}}</h3>
+
+<h3>PM10 : {{result.pm10}}</h3>
+
+<h2>Predicted AQI : {{prediction}}</h2>
+
+</div>
+
+{% endif %}
+
+</body>
+
+</html>

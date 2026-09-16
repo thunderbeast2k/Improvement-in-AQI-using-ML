@@ -1,77 +1,287 @@
-<!--A Design by W3layouts
-Author: W3layout
-Author URL: http://w3layouts.com
-License: Creative Commons Attribution 3.0 Unported
-License URL: http://creativecommons.org/licenses/by/3.0/
--->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>AQI Prediction</title>
-     {% load static %}
+<title>Air Quality Analysis — ML Algorithm Comparison</title>
+{% load static %}
 <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type="text/css" media="all" />
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="{% static 'js/jquery.min.js' %}"></script>
-<!-- Custom Theme files -->
-<!--theme-style-->
 <link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css" media="all" />
-<!--//theme-style-->
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Charity Hub Responsive web template, Bootstrap Web Templates, Flat Web Templates, Andriod Compatible web template,
-Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyErricsson, Motorola web design" />
-<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+  .page-header {
+    background: linear-gradient(135deg, #1a8a4e, #2ecc71);
+    color: white; padding: 30px 0; margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .page-header h1 { font-size: 26px; font-weight: 700; margin: 0; }
+  .page-header p { margin: 5px 0 0; opacity: 0.85; }
+  .nav-links a {
+    color: rgba(255,255,255,0.85); text-decoration: none;
+    margin-left: 20px; font-size: 14px; font-weight: 500;
+    border-bottom: 2px solid transparent; padding-bottom: 4px; transition: all 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: #fff; border-color: #fff; }
+
+  .section-card {
+    background: white; border-radius: 12px; padding: 25px;
+    margin-bottom: 30px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .section-card h4 { color: #1a8a4e; font-weight: 700; margin-bottom: 20px;
+    border-bottom: 2px solid #d5f5e3; padding-bottom: 10px; }
+
+  .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+  .search-bar input { flex: 1; padding: 14px; border-radius: 8px;
+    border: 2px solid #e0e0e0; font-size: 15px; outline: none; transition: border 0.2s; }
+  .search-bar input:focus { border-color: #2ecc71; }
+  .search-bar button {
+    padding: 14px 32px; background: #1a8a4e; color: white;
+    border: none; border-radius: 8px; font-size: 15px; font-weight: 600;
+    cursor: pointer; transition: background 0.2s;
+  }
+  .search-bar button:hover { background: #145a32; }
+
+  /* City Result Cards */
+  .algo-card {
+    border-radius: 12px; padding: 20px; color: white;
+    flex: 1; min-width: 200px; text-align: center;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+  }
+  .algo-card.rf  { background: linear-gradient(135deg, #1a73e8, #0d47a1); }
+  .algo-card.lr  { background: linear-gradient(135deg, #1a8a4e, #145a32); }
+  .algo-card.dt  { background: linear-gradient(135deg, #f39c12, #c07d0e); }
+  .algo-card h5  { font-size: 13px; opacity: 0.85; margin-bottom: 8px; }
+  .algo-card .pred-val { font-size: 42px; font-weight: 800; }
+  .algo-card .cat  { font-size: 12px; background: rgba(255,255,255,0.25);
+    border-radius: 20px; padding: 3px 12px; margin-top: 8px; display: inline-block; }
+
+  .live-data-row { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .live-pill {
+    background: #e8f0fe; color: #1a73e8; border-radius: 8px;
+    padding: 10px 18px; font-size: 13px; font-weight: 600;
+  }
+  .live-pill span { display: block; font-size: 19px; font-weight: 800; color: #0d47a1; }
+
+  /* Metrics Table */
+  .metrics-table th { background: #1a8a4e; color: white; text-align: center; }
+  .metrics-table td { text-align: center; font-size: 14px; }
+  .best { color: #1a8a4e; font-weight: 700; }
+
+  .chart-row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .chart-box { flex: 1; min-width: 300px; }
+
+  .error-box {
+    background: #fdecea; border-left: 4px solid #e74c3c;
+    padding: 16px; border-radius: 8px; color: #922b21; margin-bottom: 20px;
+  }
+</style>
 </head>
 <body>
-<!--header-->
-	<div class="header">
-	<div class="header-top">
-        <h2 style="text-align:center;color:white;font-size:40px;"> AQI Prediction</h2>
 
-		<div class="container">
+<!-- HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:15px;">
+      <div>
+        <h1>🔬 Air Quality Analysis — ML Comparison</h1>
+        <p>Compare 3 algorithms: Random Forest · Linear Regression · Decision Tree</p>
+      </div>
+      <div class="nav-links">
+        <a href="{% url 'home' %}">📊 View Dataset</a>
+        <a href="{% url 'air_quality_analysis' %}" class="active">🔬 Air Quality Analysis</a>
+        <a href="{% url 'pollution_analysis' %}">📷 Pollution Analysis</a>
+        <a href="{% url 'logout' %}">🚪 Logout</a>
+      </div>
+    </div>
+  </div>
+</div>
 
-				<div class="top-nav">
-					<span class="menu"><img src="images/menu.png" alt=""> </span>
+<div class="container">
 
-						<ul>
-						<li class="active"><a href="{% url 'user_home' %}"  >View Dataset</a><span>/</span></li>
-						<li><a href="{% url 'air_quality_analysis' %}" >Air Quality Analysis</a><span>/</span></li>
-                            <li><a href="{% url 'pollution_analysis' %}" >Pollution Analysis</a><span>/</span></li>
-						<li><a href="{% url 'user_login' %}"  >Logout</a><span>/</span></li>
+  <!-- CITY AQI PREDICTION -->
+  <div class="section-card">
+    <h4>🌆 City AQI Prediction — 3 ML Algorithms</h4>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="search-bar">
+        <input type="text" name="city" placeholder="Enter city name (e.g. Delhi, Mumbai, Kolkata, Chennai)..."
+               value="{% if city_result %}{{ city_result.live.city }}{% endif %}" required>
+        <button type="submit">🔍 Predict AQI</button>
+      </div>
+    </form>
 
-					</ul>
+    {% if city_error %}
+    <div class="error-box">⚠️ {{ city_error }}</div>
+    {% endif %}
 
-					<!--script-->
-				<script>
-					$("span.menu").click(function(){
-						$(".top-nav ul").slideToggle(500, function(){
-						});
-					});
-			</script>
-				</div>
+    {% if city_result %}
+    <!-- Live Data Pills -->
+    <p style="font-size:13px;color:#666;margin-bottom:10px;">
+      Live sensor data fetched for <strong>{{ city_result.live.city }}</strong>:
+    </p>
+    <div class="live-data-row">
+      <div class="live-pill">Live AQI <span>{{ city_result.live.aqi }}</span></div>
+      <div class="live-pill">PM2.5 <span>{{ city_result.live.pm25 }}</span></div>
+      <div class="live-pill">PM10 <span>{{ city_result.live.pm10 }}</span></div>
+      <div class="live-pill">SO₂ <span>{{ city_result.live.so2 }}</span></div>
+      <div class="live-pill">NO₂ <span>{{ city_result.live.no2 }}</span></div>
+      <div class="live-pill">CO <span>{{ city_result.live.co }}</span></div>
+      <div class="live-pill">O₃ <span>{{ city_result.live.o3 }}</span></div>
+    </div>
 
-			</div>
-		</div>
+    <!-- Algorithm Predictions -->
+    <div style="display:flex;gap:16px;flex-wrap:wrap;margin-bottom:15px;">
+      <div class="algo-card rf">
+        <h5>🌲 Random Forest</h5>
+        <div class="pred-val">{{ city_result.rf_pred }}</div>
+        <div style="font-size:11px;opacity:0.75;margin-top:4px;">μg/m³ PM2.5</div>
+        <div class="cat">{{ city_result.rf_category }}</div>
+      </div>
+      <div class="algo-card lr">
+        <h5>📈 Linear Regression</h5>
+        <div class="pred-val">{{ city_result.lr_pred }}</div>
+        <div style="font-size:11px;opacity:0.75;margin-top:4px;">μg/m³ PM2.5</div>
+        <div class="cat">{{ city_result.lr_category }}</div>
+      </div>
+      <div class="algo-card dt">
+        <h5>🌿 Decision Tree</h5>
+        <div class="pred-val">{{ city_result.dt_pred }}</div>
+        <div style="font-size:11px;opacity:0.75;margin-top:4px;">μg/m³ PM2.5</div>
+        <div class="cat">{{ city_result.dt_category }}</div>
+      </div>
+      <div class="algo-card" style="background:linear-gradient(135deg,#6c757d,#495057);">
+        <h5>⚖️ Ensemble Average</h5>
+        <div class="pred-val">{{ city_result.avg_pred }}</div>
+        <div style="font-size:11px;opacity:0.75;margin-top:4px;">μg/m³ PM2.5</div>
+        <div class="cat">All 3 Models</div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
 
-		</div>
-<!---->
- <div class="contact">
-	<div class="container">
+  <!-- ML METRICS TABLE -->
+  <div class="section-card">
+    <h4>📋 Algorithm Performance Metrics (Trained on Full Dataset)</h4>
+    <p style="font-size:13px;color:#666;">Models trained to predict PM2.5 from SO₂, NO₂, RSPM, SPM. Test set: 20% of dataset.</p>
+    <table class="table table-bordered metrics-table">
+      <thead>
+        <tr>
+          <th>Algorithm</th>
+          <th>MAE (Mean Abs Error)</th>
+          <th>MSE (Mean Sq Error)</th>
+          <th>R² Score</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for algo, m in metrics.items %}
+        <tr>
+          <td><strong>{{ algo }}</strong></td>
+          <td>{{ m.mae }}</td>
+          <td>{{ m.mse }}</td>
+          <td class="{% if m.r2 >= 0.7 %}best{% endif %}">{{ m.r2 }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <p style="font-size:12px;color:#888;">
+      <strong>R² Score</strong>: Closer to 1.0 = better. &nbsp;
+      <strong>MAE / MSE</strong>: Lower = better. &nbsp;
+      <span style="color:#1a8a4e;font-weight:600;">Green R²</span> = R² ≥ 0.7 (good fit)
+    </p>
+  </div>
 
-			<h2>Air Quality Prediction Success</h2>
+  <!-- CHARTS -->
+  <div class="section-card">
+    <h4>📊 Actual vs Predicted PM2.5 — All 3 Algorithms</h4>
+    <canvas id="predictionChart" height="100"></canvas>
+  </div>
 
-				</div>
+  <div class="section-card">
+    <div class="chart-row">
+      <div class="chart-box">
+        <h4>🏆 R² Score Comparison</h4>
+        <canvas id="r2Chart" height="200"></canvas>
+      </div>
+      <div class="chart-box">
+        <h4>📉 MAE Comparison (Lower = Better)</h4>
+        <canvas id="maeChart" height="200"></canvas>
+      </div>
+    </div>
+  </div>
 
-			</div>
+</div><!-- /container -->
 
+<div style="background:#1a8a4e;color:white;text-align:center;padding:15px;margin-top:20px;font-size:13px;">
+  Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality
+</div>
 
-	<div class="footer">
+<script>
+const actual    = {{ actual_json|safe }};
+const rfPreds   = {{ rf_json|safe }};
+const lrPreds   = {{ lr_json|safe }};
+const dtPreds   = {{ dt_json|safe }};
+const algoNames = {{ algo_names|safe }};
+const algoR2    = {{ algo_r2|safe }};
+const algoMae   = {{ algo_mae|safe }};
+const labels    = Array.from({length: actual.length}, (_, i) => i + 1);
 
-		<div class="container">
-				<div class="class-footer">
-					 <p class="footer-grid"> Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality </p>
-			 	</div>
-		 </div>
-	</div>
- </body>
+// Actual vs Predicted — 3 lines
+new Chart(document.getElementById('predictionChart'), {
+  type: 'line',
+  data: {
+    labels: labels,
+    datasets: [
+      { label: 'Actual',            data: actual,  borderColor: '#555',     borderWidth: 2, pointRadius: 0, tension: 0.3 },
+      { label: 'Random Forest',     data: rfPreds, borderColor: '#1a73e8',  borderWidth: 2, pointRadius: 0, tension: 0.3 },
+      { label: 'Linear Regression', data: lrPreds, borderColor: '#2ecc71',  borderWidth: 2, pointRadius: 0, tension: 0.3 },
+      { label: 'Decision Tree',     data: dtPreds, borderColor: '#f39c12',  borderWidth: 2, pointRadius: 0, tension: 0.3 },
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'top' } },
+    scales: { y: { beginAtZero: true } }
+  }
+});
+
+// R² Bar Chart
+new Chart(document.getElementById('r2Chart'), {
+  type: 'bar',
+  data: {
+    labels: algoNames,
+    datasets: [{
+      label: 'R² Score',
+      data: algoR2,
+      backgroundColor: ['#1a73e8', '#2ecc71', '#f39c12'],
+      borderRadius: 8,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true, max: 1 } }
+  }
+});
+
+// MAE Bar Chart
+new Chart(document.getElementById('maeChart'), {
+  type: 'bar',
+  data: {
+    labels: algoNames,
+    datasets: [{
+      label: 'MAE',
+      data: algoMae,
+      backgroundColor: ['rgba(26,115,232,0.7)', 'rgba(46,204,113,0.7)', 'rgba(243,156,18,0.7)'],
+      borderRadius: 8,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } }
+  }
+});
+</script>
+</body>
 </html>

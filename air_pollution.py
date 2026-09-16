@@ -1,243 +1,370 @@
-import numpy as np # linear algebra
-import pandas as pd # data processing, CSV file I/O (e.g. pd.read_csv)
+import pandas as pd
+import numpy as np
+import requests
+import cv2
+import json
+from sklearn.ensemble import RandomForestRegressor
+from sklearn.tree import DecisionTreeRegressor
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
-import matplotlib.pyplot as plt
-import seaborn as sns
+# -----------------------------------------------
+# LOAD & PREPARE DATASET (once at startup)
+# -----------------------------------------------
+_df_cache = None
 
-
-plt.rcParams['figure.figsize'] = (10, 7)
-
-# Warnings
-import warnings
-warnings.filterwarnings('ignore')
-
-# Input data files are available in the "../input/" directory.
-# For example, running this (by clicking run or pressing Shift+Enter) will list the files in the input directory
-
-import os
-data=pd.read_csv('data.csv',encoding="ISO-8859-1")
-data.fillna(0, inplace=True)
-print(data.head())
-
-#Function to calculate so2 individual pollutant index(si)
-def calculate_si(so2):
-    si=0
-    if (so2<=40):
-     si= so2*(50/40)
-    if (so2>40 and so2<=80):
-     si= 50+(so2-40)*(50/40)
-    if (so2>80 and so2<=380):
-     si= 100+(so2-80)*(100/300)
-    if (so2>380 and so2<=800):
-     si= 200+(so2-380)*(100/800)
-    if (so2>800 and so2<=1600):
-     si= 300+(so2-800)*(100/800)
-    if (so2>1600):
-     si= 400+(so2-1600)*(100/800)
-    return si
-data['si']=data['so2'].apply(calculate_si)
-df= data[['so2','si']]
-print(df.head())
+def _load_data():
+    global _df_cache
+    if _df_cache is None:
+        df = pd.read_csv("data.csv", encoding='cp1252', low_memory=False)
+        # Only fill numeric columns with 0, leave strings as-is
+        num_cols = df.select_dtypes(include=[np.number]).columns
+        df[num_cols] = df[num_cols].fillna(0)
+        # Convert pollutant columns to numeric (coerce non-numeric to NaN then 0)
+        for col in ['so2', 'no2', 'rspm', 'spm', 'pm2_5']:
+            df[col] = pd.to_numeric(df[col], errors='coerce').fillna(0)
+        _df_cache = df
+    return _df_cache
 
 
-#Function to calculate no2 individual pollutant index(ni)
-def calculate_ni(no2):
-    ni=0
-    if(no2<=40):
-     ni= no2*50/40
-    elif(no2>40 and no2<=80):
-     ni= 50+(no2-14)*(50/40)
-    elif(no2>80 and no2<=180):
-     ni= 100+(no2-80)*(100/100)
-    elif(no2>180 and no2<=280):
-     ni= 200+(no2-180)*(100/100)
-    elif(no2>280 and no2<=400):
-     ni= 300+(no2-280)*(100/120)
-    else:
-     ni= 400+(no2-400)*(100/120)
-    return ni
-data['ni']=data['no2'].apply(calculate_ni)
-df= data[['no2','ni']]
-print(df.head())
+# -----------------------------------------------
+# TRAIN GLOBAL MODEL (Random Forest) for live AQI
+# -----------------------------------------------
+_global_model = None
+
+def _get_global_model():
+    global _global_model
+    if _global_model is None:
+        df = _load_data()
+        X = df[['so2', 'no2', 'rspm', 'spm']]
+        y = df['pm2_5']
+        _global_model = RandomForestRegressor(n_estimators=50, random_state=42)
+        _global_model.fit(X, y)
+    return _global_model
 
 
-#Function to calculate no2 individual pollutant index(rpi)
-def calculate_(rspm):
-    rpi=0
-    if(rpi<=30):
-     rpi=rpi*50/30
-    elif(rpi>30 and rpi<=60):
-     rpi=50+(rpi-30)*50/30
-    elif(rpi>60 and rpi<=90):
-     rpi=100+(rpi-60)*100/30
-    elif(rpi>90 and rpi<=120):
-     rpi=200+(rpi-90)*100/30
-    elif(rpi>120 and rpi<=250):
-     rpi=300+(rpi-120)*(100/130)
-    else:
-     rpi=400+(rpi-250)*(100/130)
-    return rpi
-data['rpi']=data['rspm'].apply(calculate_si)
-df= data[['rspm','rpi']]
-print(df.tail())
-#many data values of rspm values is unawailable since it was not measure before
-
-def calculate_spi(spm):
-    spi=0
-    if(spm<=50):
-     spi=spm
-    if(spm<50 and spm<=100):
-     spi=spm
-    elif(spm>100 and spm<=250):
-     spi= 100+(spm-100)*(100/150)
-    elif(spm>250 and spm<=350):
-     spi=200+(spm-250)
-    elif(spm>350 and spm<=450):
-     spi=300+(spm-350)*(100/80)
-    else:
-     spi=400+(spm-430)*(100/80)
-    return spi
-data['spi']=data['spm'].apply(calculate_spi)
-df= data[['spm','spi']]
-print(df.tail())
-#many data values of rspm values is unawailable since it was not measure before
+# -----------------------------------------------
+# API FUNCTION — Fetch live AQI for a city
+# -----------------------------------------------
+def fetch_live_aqi(city):
+    API_KEY = "1e102e5042dda0116a70b2fc1105de4e43967b95"
+    url = f"https://api.waqi.info/feed/{city}/?token={API_KEY}"
+    try:
+        response = requests.get(url, timeout=10)
+        data = response.json()
+        if data.get("status") == "ok":
+            iaqi = data["data"].get("iaqi", {})
+            return {
+                "aqi":   data["data"].get("aqi", 0),
+                "city":  data["data"].get("city", {}).get("name", city),
+                "pm25":  iaqi.get("pm25", {}).get("v", 0),
+                "pm10":  iaqi.get("pm10", {}).get("v", 0),
+                "so2":   iaqi.get("so2",  {}).get("v", 0),
+                "no2":   iaqi.get("no2",  {}).get("v", 0),
+                "co":    iaqi.get("co",   {}).get("v", 0),
+                "o3":    iaqi.get("o3",   {}).get("v", 0),
+            }
+    except Exception:
+        pass
+    return None
 
 
-#function to calculate the air quality index (AQI) of every data value
-#its is calculated as per indian govt standards
-def calculate_aqi(si,ni,spi,rpi):
-    aqi=0
-    if(si>ni and si>spi and si>rpi):
-     aqi=si
-    if(spi>si and spi>ni and spi>rpi):
-     aqi=spi
-    if(ni>si and ni>spi and ni>rpi):
-     aqi=ni
-    if(rpi>si and rpi>ni and rpi>spi):
-     aqi=rpi
-    return aqi
-data['AQI']=data.apply(lambda x:calculate_aqi(x['si'],x['ni'],x['spi'],x['rpi']),axis=1)
-df= data[['sampling_date','state','si','ni','rpi','spi','AQI']]
-print(df.head())
+# -----------------------------------------------
+# SINGLE ML PREDICTION using live city values
+# -----------------------------------------------
+def predict_aqi(pm25, pm10):
+    mdl = _get_global_model()
+    inp = pd.DataFrame(
+        [[pm25 or 0, pm10 or 0, pm10 or 0, pm25 or 0]],
+        columns=['so2', 'no2', 'rspm', 'spm']
+    )
+    return round(float(mdl.predict(inp)[0]), 2)
 
 
-print(df.state.unique())
+# -----------------------------------------------
+# CITY AQI — predict with ALL 3 algorithms
+# -----------------------------------------------
+def predict_city_aqi_all_algorithms(city):
+    """
+    Fetch live AQI for city, then run SO2/NO2/RSPM/SPM values
+    through all 3 ML models.  Returns a dict with live data +
+    per-algorithm predictions.
+    """
+    live = fetch_live_aqi(city)
+    if not live:
+        return None
 
-state=pd.read_csv("lat.csv")
-state.head()
-print(df.head())
+    so2  = live.get("so2",  0) or 0
+    no2  = live.get("no2",  0) or 0
+    pm25 = live.get("pm25", 0) or 0
+    pm10 = live.get("pm10", 0) or 0
 
+    inp = pd.DataFrame(
+        [[so2, no2, pm10, pm25]],
+        columns=['so2', 'no2', 'rspm', 'spm']
+    )
 
-dff=pd.merge(state.set_index("State"),df.set_index("state"), right_index=True, left_index=True).reset_index()
-print(dff.head())
+    df = _load_data()
+    X = df[['so2', 'no2', 'rspm', 'spm']]
+    y = df['pm2_5']
+    X_train, _, y_train, _ = train_test_split(X, y, test_size=0.2, random_state=42)
 
-from mpl_toolkits.basemap import Basemap
+    rf  = RandomForestRegressor(n_estimators=50, random_state=42)
+    lr  = LinearRegression()
+    dt  = DecisionTreeRegressor(max_depth=6, random_state=42)
 
-import warnings
-warnings.filterwarnings('ignore')
+    rf.fit(X_train, y_train)
+    lr.fit(X_train, y_train)
+    dt.fit(X_train, y_train)
 
+    rf_pred  = round(float(rf.predict(inp)[0]),  2)
+    lr_pred  = round(float(lr.predict(inp)[0]),  2)
+    dt_pred  = round(float(dt.predict(inp)[0]),  2)
 
-m = Basemap(projection='mill',llcrnrlat=5,urcrnrlat=40, llcrnrlon=60,urcrnrlon=110,lat_ts=20,resolution='c')
+    def classify(val):
+        if val <= 50:   return "Good"
+        if val <= 100:  return "Moderate"
+        if val <= 150:  return "Unhealthy for Sensitive Groups"
+        if val <= 200:  return "Unhealthy"
+        if val <= 300:  return "Very Unhealthy"
+        return "Hazardous"
 
-longitudes = dff["Latitude"].tolist()
-latitudes = dff["Longitude"].tolist()
-#m = Basemap(width=12000000,height=9000000,projection='lcc',
-            #resolution=None,lat_1=80.,lat_2=55,lat_0=80,lon_0=-107.)
-x,y = m(longitudes,latitudes)
-
-
-
-
-
-data['date'] = pd.to_datetime(data['date'],format='%Y-%m-%d') # date parse
-data['year'] = data['date'].dt.year # year
-data['year'] = data['year'].fillna(0.0).astype(int)
-data = data[(data['year']>0)]
-
-df = data[['AQI','year','state']].groupby(["year"]).median().reset_index().sort_values(by='year',ascending=False)
-f,ax=plt.subplots(figsize=(15,10))
-sns.pointplot(x='year', y='AQI', data=df)
-plt.show()
-
-import warnings
-import itertools
-import dateutil
-import statsmodels.api as sm
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import seaborn as sns
-
-df=data[['AQI','date']]
-df["date"] = pd.to_datetime(df['date'])
-print(df.tail(20))
-import warnings
-import itertools
-import dateutil
-import statsmodels.api as sm
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
-import seaborn as sns
-
-df=data[['AQI','date']]
-df["date"] = pd.to_datetime(df['date'])
-print(df.tail(20))
-
-df=df.set_index('date').resample('M')["AQI"].mean()
-print(df.head())
+    return {
+        "live":      live,
+        "rf_pred":   rf_pred,  "rf_category":  classify(rf_pred),
+        "lr_pred":   lr_pred,  "lr_category":  classify(lr_pred),
+        "dt_pred":   dt_pred,  "dt_category":  classify(dt_pred),
+        "avg_pred":  round((rf_pred + lr_pred + dt_pred) / 3, 2),
+    }
 
 
-data=df.reset_index(level=0, inplace=False)
-data = data[np.isfinite(data['AQI'])]
-data=data[data.date != '1970-01-31']
-data = data.reset_index(drop=True)
-print(data.head())
+# -----------------------------------------------
+# DATASET FUNCTION — first 50 rows
+# -----------------------------------------------
+def get_dataset():
+    df = _load_data()
+    return df.head(50)
 
 
-df=data.set_index('date')
-df.sort_values(by='date',ascending=False)
-df.plot(figsize=(15, 6))
-plt.show()
-y=df.AQI
+# -----------------------------------------------
+# DATASET STATS — for home page cards & charts
+# -----------------------------------------------
+def get_dataset_stats():
+    df = _load_data()
+
+    # Summary stats
+    stats = {}
+    for col in ['so2', 'no2', 'rspm', 'spm', 'pm2_5']:
+        stats[col] = {
+            "mean":   round(df[col].mean(), 2),
+            "median": round(df[col].median(), 2),
+            "max":    round(df[col].max(), 2),
+            "std":    round(df[col].std(), 2),
+        }
+
+    # Top 10 polluted states by avg RSPM
+    top_states = (
+        df.groupby('state')['rspm']
+        .mean()
+        .sort_values(ascending=False)
+        .head(10)
+    )
+
+    # Pollution category distribution by rspm
+    def cat(v):
+        if v <= 60:  return "Good"
+        if v <= 90:  return "Moderate"
+        if v <= 120: return "Poor"
+        return "Hazardous"
+
+    df['category'] = df['rspm'].apply(cat)
+    cat_counts = df['category'].value_counts().to_dict()
+
+    # Feature importance from RF on this dataset
+    X = df[['so2', 'no2', 'rspm', 'spm']]
+    y = df['pm2_5']
+    rf = RandomForestRegressor(n_estimators=50, random_state=42)
+    rf.fit(X, y)
+    importance = dict(zip(['so2', 'no2', 'rspm', 'spm'],
+                          [round(v, 4) for v in rf.feature_importances_]))
+
+    return {
+        "stats":      stats,
+        "top_states": {"labels": top_states.index.tolist(),
+                       "values": [round(v, 2) for v in top_states.values]},
+        "categories": cat_counts,
+        "importance": importance,
+        "total_rows": len(df),
+        "total_states": df['state'].nunique(),
+    }
 
 
-n = df.shape[0]
-train_size = 0.65
+# -----------------------------------------------
+# MULTI-ALGORITHM ANALYSIS — 3 algorithms compared
+# -----------------------------------------------
+def multi_algorithm_analysis():
+    df = _load_data()
+    X = df[['so2', 'no2', 'rspm', 'spm']]
+    y = df['pm2_5']
 
-features_dataframe = df.sort_values('date')
-train = df.iloc[:int(n * train_size)]
-test = df.iloc[int(n * train_size):]
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.2, random_state=42
+    )
 
-train.AQI.plot(figsize=(15,8), title= 'YEARLY VARIATIONS', fontsize=14)
-test.AQI.plot(figsize=(15,8), title= 'YEARLY VARIATIONS', fontsize=14)
-plt.show()
+    algorithms = {
+        "Random Forest":   RandomForestRegressor(n_estimators=50, random_state=42),
+        "Linear Regression": LinearRegression(),
+        "Decision Tree":   DecisionTreeRegressor(max_depth=6, random_state=42),
+    }
 
+    results = {}
+    predictions_50 = {}
+    actual_50 = y_test.tolist()[:50]
 
-dd= np.asarray(train.AQI)
-y_hat = test.copy()
-y_hat['naive'] = dd[len(dd)-1]
-plt.figure(figsize=(12,8))
-plt.plot(train.index, train['AQI'], label='Train')
-plt.plot(test.index,test['AQI'], label='Test')
-plt.plot(y_hat.index,y_hat['naive'], label='Naive Forecast')
-plt.legend(loc='best')
-plt.title("Naive Forecast",fontsize=20)
+    for name, mdl in algorithms.items():
+        mdl.fit(X_train, y_train)
+        preds = mdl.predict(X_test)
+        results[name] = {
+            "mae":  round(mean_absolute_error(y_test, preds), 3),
+            "mse":  round(mean_squared_error(y_test, preds),  3),
+            "r2":   round(r2_score(y_test, preds),            4),
+        }
+        predictions_50[name] = [round(p, 2) for p in preds[:50]]
 
-plt.legend(["actual ","predicted"])
-plt.xlabel("YEAR",fontsize=20)
-plt.ylabel("AQI",fontsize=20)
-plt.tick_params(labelsize=20)
-plt.show()
-
-
-df=data[['AQI','date']]
-
-df['date']=pd.to_datetime(df['date'])
-date=df.groupby(pd.Grouper(key='date',freq='1MS'))["AQI"].mean()
-df.count()
-
-data['month'] = data['date'].dt.month
-data['year'] = data['date'].dt.year
-data=data[['AQI','date','month','year']]
-data.head()
+    return {
+        "metrics":    results,
+        "actual":     actual_50,
+        "predicted":  predictions_50,
+    }
 
 
+# -----------------------------------------------
+# IMAGE-BASED POLLUTION ANALYSIS using OpenCV
+# -----------------------------------------------
+def analyze_pollution_image(image_bytes):
+    """
+    Analyze an uploaded image for pollution indicators.
+    Uses OpenCV to extract color/haze features and classify air quality.
+    """
+    try:
+        import numpy as np
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        if img is None:
+            return {"error": "Could not read image. Please upload a valid image file."}
+
+        # Convert to different color spaces
+        img_rgb   = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        img_gray  = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        img_hsv   = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+
+        h, w = img.shape[:2]
+
+        # --- Feature extraction ---
+        # 1. Brightness (higher = clearer sky)
+        brightness = round(float(np.mean(img_gray)), 2)
+
+        # 2. Blue channel intensity (clear sky = high blue)
+        blue_intensity = round(float(np.mean(img_rgb[:, :, 2])), 2)
+
+        # 3. Contrast (hazy images have lower contrast)
+        contrast = round(float(img_gray.std()), 2)
+
+        # 4. Saturation from HSV (pollution reduces saturation)
+        saturation = round(float(np.mean(img_hsv[:, :, 1])), 2)
+
+        # 5. Haze Factor — ratio of low-contrast pixels
+        laplacian_var = cv2.Laplacian(img_gray, cv2.CV_64F).var()
+        haze_factor   = round(max(0, 100 - min(laplacian_var / 5, 100)), 2)
+
+        # 6. Gray dominance (pollution makes images grayer)
+        r_mean = float(np.mean(img_rgb[:, :, 0]))
+        g_mean = float(np.mean(img_rgb[:, :, 1]))
+        b_mean = float(np.mean(img_rgb[:, :, 2]))
+        gray_dominance = round(1 - (max(r_mean, g_mean, b_mean) -
+                                    min(r_mean, g_mean, b_mean)) / 255, 4)
+
+        # --- Pollution Score (0=clean, 500=very polluted) ---
+        # High haze, low blue, low contrast, high gray = more pollution
+        pollution_score = (
+            haze_factor * 2.0
+            + (255 - blue_intensity) * 0.8
+            + (100 - min(contrast, 100)) * 0.5
+            + gray_dominance * 80
+        )
+        pollution_score = round(min(pollution_score, 500), 1)
+
+        # --- Classification ---
+        if pollution_score < 80:
+            level = "Good"
+            color = "#27ae60"
+            description = "Air quality appears clean and clear. Excellent visibility."
+            recommendations = [
+                "Enjoy outdoor activities freely.",
+                "Air quality is excellent — no precautions needed.",
+                "Great day for exercise and outdoor sports."
+            ]
+        elif pollution_score < 180:
+            level = "Moderate"
+            color = "#f39c12"
+            description = "Moderate haze detected. Air quality is acceptable."
+            recommendations = [
+                "Unusually sensitive people should consider reducing prolonged outdoor exertion.",
+                "Keep windows open for ventilation.",
+                "Monitor air quality updates."
+            ]
+        elif pollution_score < 300:
+            level = "Poor"
+            color = "#e74c3c"
+            description = "Significant haze/pollution detected. Reduced visibility."
+            recommendations = [
+                "People with respiratory conditions should limit outdoor exposure.",
+                "Wear a mask (N95) if going outside.",
+                "Avoid strenuous outdoor activity.",
+                "Keep windows closed and use air purifiers indoors."
+            ]
+        else:
+            level = "Hazardous"
+            color = "#8e44ad"
+            description = "Severe pollution/haze detected. Very poor visibility."
+            recommendations = [
+                "Avoid all outdoor activities if possible.",
+                "Wear N95 mask if you must go outside.",
+                "Keep all windows and doors sealed.",
+                "Use air purifiers indoors.",
+                "Seek medical advice if experiencing breathing difficulties."
+            ]
+
+        # Encode image for display in browser
+        _, buffer   = cv2.imencode('.jpg', img)
+        import base64
+        img_b64 = base64.b64encode(buffer).decode('utf-8')
+
+        return {
+            "pollution_score":  pollution_score,
+            "pollution_level":  level,
+            "level_color":      color,
+            "description":      description,
+            "recommendations":  recommendations,
+            "brightness":       brightness,
+            "blue_intensity":   blue_intensity,
+            "contrast":         contrast,
+            "saturation":       saturation,
+            "haze_factor":      haze_factor,
+            "gray_dominance":   round(gray_dominance * 100, 2),
+            "image_b64":        img_b64,
+            "image_size":       f"{w} x {h} px",
+        }
+
+    except Exception as e:
+        return {"error": f"Image analysis failed: {str(e)}"}
+
+
+# -----------------------------------------------
+# LEGACY COMPAT — kept for any old references
+# -----------------------------------------------
+def dataset_analysis():
+    result = multi_algorithm_analysis()
+    return result["actual"], result["predicted"]["Random Forest"]

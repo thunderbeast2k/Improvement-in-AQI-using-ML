@@ -1,150 +1,274 @@
-<!--A Design by W3layouts
-Author: W3layout
-Author URL: http://w3layouts.com
-License: Creative Commons Attribution 3.0 Unported
-License URL: http://creativecommons.org/licenses/by/3.0/
--->
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality</title>
-     {% load static %}
+<title>AQI Dashboard — View Dataset</title>
+{% load static %}
 <link href="{% static 'css/bootstrap.css' %}" rel="stylesheet" type="text/css" media="all" />
-<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 <script src="{% static 'js/jquery.min.js' %}"></script>
-<!-- Custom Theme files -->
-<!--theme-style-->
 <link href="{% static 'css/style.css' %}" rel="stylesheet" type="text/css" media="all" />
-<!--//theme-style-->
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="keywords" content="Charity Hub Responsive web template, Bootstrap Web Templates, Flat Web Templates, Andriod Compatible web template,
-Smartphone Compatible web template, free webdesigns for Nokia, Samsung, LG, SonyErricsson, Motorola web design" />
-<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
- <style>
-#customers {
-  font-family: Arial, Helvetica, sans-serif;
-  border-collapse: collapse;
-  width: 100%;
-  background-color:white;
-}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+  body { background: #f0f4f8; font-family: 'Segoe UI', sans-serif; }
+  .stat-card {
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    color: white; border-radius: 12px; padding: 20px;
+    margin-bottom: 20px; box-shadow: 0 4px 15px rgba(26,115,232,0.3);
+  }
+  .stat-card.green  { background: linear-gradient(135deg, #2ecc71, #1a8a4e); }
+  .stat-card.orange { background: linear-gradient(135deg, #f39c12, #c0782a); }
+  .stat-card.purple { background: linear-gradient(135deg, #8e44ad, #5b2c6f); }
+  .stat-card.red    { background: linear-gradient(135deg, #e74c3c, #922b21); }
+  .stat-card h3 { font-size: 14px; opacity: 0.85; margin-bottom: 6px; }
+  .stat-card .big { font-size: 32px; font-weight: 700; }
+  .stat-card .sub { font-size: 12px; opacity: 0.75; margin-top: 4px; }
 
-#customers td, #customers th {
-  border: 1px solid #ddd;
-  padding: 8px;
-}
+  .section-card {
+    background: white; border-radius: 12px; padding: 25px;
+    margin-bottom: 30px; box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+  }
+  .section-card h4 { color: #1a73e8; font-weight: 700; margin-bottom: 20px; border-bottom: 2px solid #e8f0fe; padding-bottom: 10px; }
 
-#customers tr:nth-child(even){background-color: #f2f2f2;}
+  .chart-row { display: flex; gap: 20px; flex-wrap: wrap; }
+  .chart-box { flex: 1; min-width: 280px; }
 
-#customers tr:hover {background-color: #ddd;}
+  .aqi-result-box {
+    background: linear-gradient(135deg, #1a73e8, #0d47a1);
+    color: white; border-radius: 12px; padding: 20px; margin-bottom: 20px;
+  }
+  .aqi-result-box .aqi-val { font-size: 48px; font-weight: 800; }
 
-#customers th {
-  padding-top: 12px;
-  padding-bottom: 12px;
-  text-align: left;
-  background-color: #4CAF50;
-  color: white;
-}
+  .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+  .search-bar input { flex: 1; padding: 12px; border-radius: 8px; border: 2px solid #e0e0e0; font-size: 15px; }
+  .search-bar button {
+    padding: 12px 28px; background: #1a73e8; color: white;
+    border: none; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .search-bar button:hover { background: #0d47a1; }
+
+  table.dataset-table { font-size: 12px; }
+  .table-responsive { max-height: 400px; overflow-y: auto; }
+
+  .page-header {
+    background: linear-gradient(135deg, #0d47a1, #1a73e8);
+    color: white; padding: 30px 0; margin-bottom: 30px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  }
+  .page-header h1 { font-size: 26px; font-weight: 700; margin: 0; }
+  .page-header p { margin: 5px 0 0; opacity: 0.85; }
+  .nav-links a {
+    color: rgba(255,255,255,0.85); text-decoration: none;
+    margin-left: 20px; font-size: 14px; font-weight: 500;
+    border-bottom: 2px solid transparent; padding-bottom: 4px;
+    transition: all 0.2s;
+  }
+  .nav-links a:hover, .nav-links a.active { color: #fff; border-color: #fff; }
+  .metric-pill {
+    display: inline-block; background: #e8f0fe; color: #1a73e8;
+    border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 600; margin: 3px;
+  }
 </style>
 </head>
 <body>
-<!--header-->
-	<div class="header">
-	<div class="header-top">
-        <h2 style="text-align:center;color:white;font-size:40px;"> Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality</h2>
 
-		<div class="container">
+<!-- HEADER -->
+<div class="page-header">
+  <div class="container">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:15px;">
+      <div>
+        <h1>🌫️ Deep Air Learning — AQI Dashboard</h1>
+        <p>Interpolation, Prediction and Feature Analysis of Fine-grained Air Quality</p>
+      </div>
+      <div class="nav-links">
+        <a href="{% url 'home' %}" class="active">📊 View Dataset</a>
+        <a href="{% url 'air_quality_analysis' %}">🔬 Air Quality Analysis</a>
+        <a href="{% url 'pollution_analysis' %}">📷 Pollution Analysis</a>
+        <a href="{% url 'logout' %}">🚪 Logout</a>
+      </div>
+    </div>
+  </div>
+</div>
 
-				<div class="top-nav">
-					<span class="menu"><img src="images/menu.png" alt=""> </span>
+<div class="container">
 
-						<ul>
-						<li class="active"><a href="{% url 'user_home' %}"  >View Dataset</a><span>/</span></li>
-						<li><a href="{% url 'air_quality_analysis' %}" >Air Quality Analysis</a><span>/</span></li>
-                            <li><a href="{% url 'pollution_analysis' %}" >Pollution Analysis</a><span>/</span></li>
-						<li><a href="{% url 'user_login' %}"  >Logout</a><span>/</span></li>
+  <!-- STATS CARDS -->
+  <div class="row">
+    <div class="col-md-3">
+      <div class="stat-card">
+        <h3>📂 Total Records</h3>
+        <div class="big">{{ total_rows|default:"—" }}</div>
+        <div class="sub">Dataset entries loaded</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card green">
+        <h3>🏙️ States Covered</h3>
+        <div class="big">{{ total_states|default:"—" }}</div>
+        <div class="sub">Across India</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card orange">
+        <h3>⚗️ Avg RSPM (PM10)</h3>
+        <div class="big">{{ stats.stats.rspm.mean }}</div>
+        <div class="sub">μg/m³ dataset average</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="stat-card purple">
+        <h3>💨 Avg PM2.5</h3>
+        <div class="big">{{ stats.stats.pm2_5.mean }}</div>
+        <div class="sub">μg/m³ dataset average</div>
+      </div>
+    </div>
+  </div>
 
-					</ul>
+  <!-- QUICK CITY SEARCH -->
+  <div class="section-card">
+    <h4>🔍 Live City AQI Quick Check</h4>
+    <form method="POST">
+      {% csrf_token %}
+      <div class="search-bar">
+        <input type="text" name="city" placeholder="Enter city name (e.g. Delhi, Mumbai, Bangalore)..." value="{{ request.POST.city }}" required>
+        <button type="submit">Check AQI</button>
+      </div>
+    </form>
+    {% if result %}
+    <div class="aqi-result-box">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap;">
+        <div>
+          <div style="font-size:14px; opacity:0.8;">Live AQI — {{ result.city }}</div>
+          <div class="aqi-val">{{ result.aqi }}</div>
+          <div style="margin-top:8px;">
+            <span class="metric-pill" style="background:rgba(255,255,255,0.2);color:white;">SO₂ {{ result.so2 }}</span>
+            <span class="metric-pill" style="background:rgba(255,255,255,0.2);color:white;">NO₂ {{ result.no2 }}</span>
+            <span class="metric-pill" style="background:rgba(255,255,255,0.2);color:white;">PM2.5 {{ result.pm25 }}</span>
+            <span class="metric-pill" style="background:rgba(255,255,255,0.2);color:white;">PM10 {{ result.pm10 }}</span>
+          </div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:13px;opacity:0.8;">ML Predicted PM2.5</div>
+          <div style="font-size:42px;font-weight:800;">{{ prediction }}</div>
+          <div style="font-size:12px;opacity:0.75;">Random Forest Model</div>
+        </div>
+      </div>
+    </div>
+    {% endif %}
+  </div>
 
-					<!--script-->
-				<script>
-					$("span.menu").click(function(){
-						$(".top-nav ul").slideToggle(500, function(){
-						});
-					});
-			</script>
-				</div>
+  <!-- CHARTS ROW -->
+  <div class="section-card">
+    <h4>📈 Dataset Insights</h4>
+    <div class="chart-row">
+      <div class="chart-box">
+        <p style="font-size:13px;font-weight:600;color:#555;">Top 10 Most Polluted States (Avg RSPM)</p>
+        <canvas id="statesChart" height="250"></canvas>
+      </div>
+      <div class="chart-box">
+        <p style="font-size:13px;font-weight:600;color:#555;">Pollution Category Distribution</p>
+        <canvas id="catChart" height="250"></canvas>
+      </div>
+      <div class="chart-box">
+        <p style="font-size:13px;font-weight:600;color:#555;">Feature Importance (Random Forest)</p>
+        <canvas id="impChart" height="250"></canvas>
+      </div>
+    </div>
+  </div>
 
-			</div>
-		</div>
-
-		</div>
-<!---->
- <div class="contact">
-	<div class="container">
-
-			<h2>View Dataset</h2>
-<table id="customers" style="overflow:scroll;">
-        <thead>
-        <tr class="warning">
-
-            <th>Stn_code</th>
-             <th>Sampling Date</th>
-            <th>State</th>
-            <th>Location</th>
-            <th>Agency</th>
-            <th>Type</th>
-            <th>SO2</th>
-            <th>NO2</th>
-            <th>RSPM</th>
-            <th>SPM</th>
-            <th>Location Monitoring Station</th>
-            <th>PM25</th>
-            <th>Date</th>
-
-
-
-
-
-        </tr>
-        </thead>
-        {% for obj in view_data1 %}
-
-       <tbody>
-        <tr>
-            <td>{{obj.stn_code}}</td>
-            <td>{{obj.sampling_date}}</td>
-            <td>{{obj.state}}</td>
-            <td>{{obj.location}}</td>
-            <td>{{obj.agency}}</td>
-            <td>{{obj.type}}</td>
-            <td>{{obj.so2}}</td>
-            <td>{{obj.no2}}</td>
-            <td>{{obj.rspm}}</td>
-            <td>{{obj.spm}}</td>
-            <td>{{obj.location_monitoring_station}}</td>
-             <td>{{obj.pm2_5}}</td>
-             <td>{{obj.date}}</td>
-
-
-
-
-                 </tr>
-       </tbody>
-        {% endfor %}
+  <!-- POLLUTANT STATS TABLE -->
+  <div class="section-card">
+    <h4>📊 Pollutant Statistics Summary</h4>
+    <table class="table table-bordered table-hover" style="font-size:13px;">
+      <thead style="background:#1a73e8;color:white;">
+        <tr><th>Pollutant</th><th>Mean</th><th>Median</th><th>Std Dev</th><th>Max</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><b>SO₂</b></td><td>{{ stats.stats.so2.mean }}</td><td>{{ stats.stats.so2.median }}</td><td>{{ stats.stats.so2.std }}</td><td>{{ stats.stats.so2.max }}</td></tr>
+        <tr><td><b>NO₂</b></td><td>{{ stats.stats.no2.mean }}</td><td>{{ stats.stats.no2.median }}</td><td>{{ stats.stats.no2.std }}</td><td>{{ stats.stats.no2.max }}</td></tr>
+        <tr><td><b>RSPM (PM10)</b></td><td>{{ stats.stats.rspm.mean }}</td><td>{{ stats.stats.rspm.median }}</td><td>{{ stats.stats.rspm.std }}</td><td>{{ stats.stats.rspm.max }}</td></tr>
+        <tr><td><b>SPM</b></td><td>{{ stats.stats.spm.mean }}</td><td>{{ stats.stats.spm.median }}</td><td>{{ stats.stats.spm.std }}</td><td>{{ stats.stats.spm.max }}</td></tr>
+        <tr><td><b>PM2.5</b></td><td>{{ stats.stats.pm2_5.mean }}</td><td>{{ stats.stats.pm2_5.median }}</td><td>{{ stats.stats.pm2_5.std }}</td><td>{{ stats.stats.pm2_5.max }}</td></tr>
+      </tbody>
     </table>
-				</div>
+  </div>
 
-			</div>
+  <!-- DATASET TABLE -->
+  <div class="section-card">
+    <h4>🗃️ Raw Dataset (First 50 Records)</h4>
+    <div class="table-responsive">
+      {{ dataset_html|safe }}
+    </div>
+  </div>
 
+</div><!-- /container -->
 
-	<div class="footer">
+<div style="background:#1a73e8;color:white;text-align:center;padding:15px;margin-top:20px;font-size:13px;">
+  Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality
+</div>
 
-		<div class="container">
-				<div class="class-footer">
-					 <p class="footer-grid"> Deep Air Learning: Interpolation, Prediction, and Feature Analysis of Fine-grained Air Quality </p>
-			 	</div>
-		 </div>
-	</div>
- </body>
+<script>
+const statesLabels = {{ top_states_labels|safe }};
+const statesValues = {{ top_states_values|safe }};
+const catLabels    = {{ cat_labels|safe }};
+const catValues    = {{ cat_values|safe }};
+const impLabels    = {{ imp_labels|safe }};
+const impValues    = {{ imp_values|safe }};
+
+// Top States Bar Chart
+new Chart(document.getElementById('statesChart'), {
+  type: 'bar',
+  data: {
+    labels: statesLabels,
+    datasets: [{
+      label: 'Avg RSPM (μg/m³)',
+      data: statesValues,
+      backgroundColor: 'rgba(26,115,232,0.75)',
+      borderColor: '#0d47a1', borderWidth: 1, borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true, indexAxis: 'y',
+    plugins: { legend: { display: false } },
+    scales: { x: { beginAtZero: true } }
+  }
+});
+
+// Category Pie Chart
+new Chart(document.getElementById('catChart'), {
+  type: 'doughnut',
+  data: {
+    labels: catLabels,
+    datasets: [{
+      data: catValues,
+      backgroundColor: ['#27ae60','#f39c12','#e74c3c','#8e44ad'],
+      borderWidth: 2, borderColor: '#fff',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { position: 'bottom' } },
+  }
+});
+
+// Feature Importance Bar Chart
+new Chart(document.getElementById('impChart'), {
+  type: 'bar',
+  data: {
+    labels: impLabels,
+    datasets: [{
+      label: 'Importance',
+      data: impValues,
+      backgroundColor: ['#2ecc71','#3498db','#e74c3c','#f39c12'],
+      borderRadius: 5,
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } }
+  }
+});
+</script>
+</body>
 </html>

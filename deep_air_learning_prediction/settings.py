@@ -56,7 +56,7 @@ ROOT_URLCONF = 'deep_air_learning_prediction.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [((os.path.join(BASE_DIR,'assets/templates')))],
+        'DIRS': ['assets/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -68,6 +68,7 @@ TEMPLATES = [
         },
     },
 ]
+
 
 WSGI_APPLICATION = 'deep_air_learning_prediction.wsgi.application'
 

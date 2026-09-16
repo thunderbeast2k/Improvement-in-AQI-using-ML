@@ -24,3 +24,19 @@ class view_dataset(models.Model):
     location_monitoring_station = models.CharField(max_length=300)
     pm2_5 = models.CharField(max_length=300)
     date = models.CharField(max_length=300)
+
+
+class LiveAirQuality(models.Model):
+    city = models.CharField(max_length=100)
+    aqi = models.FloatField()
+    pm25 = models.FloatField(null=True, blank=True)
+    pm10 = models.FloatField(null=True, blank=True)
+    so2 = models.FloatField(null=True, blank=True)
+    no2 = models.FloatField(null=True, blank=True)
+    co = models.FloatField(null=True, blank=True)
+    o3 = models.FloatField(null=True, blank=True)
+    temperature = models.FloatField(null=True, blank=True)
+    humidity = models.FloatField(null=True, blank=True)
+    wind_speed = models.FloatField(null=True, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    source = models.CharField(max_length=100, default='WAQI')
