@@ -1,15 +1,8 @@
 {
-  "builds": [
+  "rewrites": [
     {
-      "src": "deep_air_learning_prediction/wsgi.py",
-      "use": "@vercel/python",
-      "config": { "maxLambdaSize": "50mb" }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "deep_air_learning_prediction/wsgi.py"
+      "source": "/(.*)",
+      "destination": "/api/index.py"
     }
   ]
 }
