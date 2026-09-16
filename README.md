@@ -1,6 +1,6 @@
-# Improvement in Air Quality Index (AQI) Prediction Using Machine Learning & Deep Learning
+# Improvement in Air Quality Index (AQI) Prediction Using Machine Learning
 
-An end-to-end machine learning and deep learning project focused on analyzing environmental sensor data, tracking historical air quality metrics, and predicting Air Quality Index (AQI) levels to aid in proactive pollution mitigation.
+An end-to-end machine learning project focused on analyzing environmental sensor data, tracking historical air quality metrics, and predicting Air Quality Index (AQI) levels to aid in proactive pollution mitigation.
 
 ---
 
